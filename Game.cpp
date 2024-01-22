@@ -104,6 +104,8 @@ void Game::gameStart() {
 
             isFirst = doShot(isFirst, xy);
         }
+        if (gameEnd(this->botField))
+            break;
         while (!isFirst) {
             cout << "\nВыстрел бота (Подождите несколько секунд): \n";
 
@@ -114,11 +116,11 @@ void Game::gameStart() {
     system("cls");
     if (gameEnd(this->botField))
     {
-        cout << "Вы выиграли! :)";
+        cout << "Вы проиграли :(";
     }
     else
     {
-        cout << "Вы проиграли :(";
+        cout << "Вы выиграли! :)";
     }
 }
 
