@@ -4,7 +4,7 @@
 #include <iostream>
 
 // структера дл€ хранени€ кординат
-struct cordinates {
+struct coordinates {
 	int x = -1;
 	int y = -1;
 };
@@ -38,22 +38,22 @@ class Game {
 	field testBotsField;
 
 	// функци€ определ€ет, есть ли вокруг €чейки корабли 
-	bool isFree(field& Field, cordinates cord);
+	bool isFree(field& Field, coordinates cord);
 
 	// функци€ определ€ет, есть ли вокруг клетки "раненые" клетки
-	bool isKilled(field Field, cordinates xy);
+	bool isKilled(field Field, coordinates xy);
 
 	// функци€ котора€ убивает корабль
-	int doKilling(field& Field, cordinates xy, int count);
+	int doKilling(field& Field, coordinates xy, int count);
 
 	// функци€ проверки нет ли подстреленных кораблей на поле
-	cordinates checkWoundedShips(field Field);
+	coordinates checkWoundedShips(field Field);
 
 	// провер€ем заончилась ли игра (на поле не осталось клеток со значени€ми > 0)
 	bool gameEnd(field Field);
 
 	// функци€ дл€ вызстрела соперника 
-	bool doShot(int playerNum, cordinates cord); // playerNum => 0 - вастрел по игроку, 1 - выстрел по боту 
+	bool doShot(int playerNum, coordinates cord); // playerNum => 0 - вастрел по игроку, 1 - выстрел по боту 
 
 	// поставить на поле все необходимые корабли
 	bool setAllShips(field& Field, int settingType = 1);
@@ -62,19 +62,19 @@ class Game {
 	bool setAllShipsForGoodStart(field& Field);
 
 	// попытатьс€ поставить корабль нужного размера на нужные кординаты 
-	int setShip(field& Field, cordinates cord, const int size, int alreadySet = 0, int settingType = 1);
+	int setShip(field& Field, coordinates cord, const int size, int alreadySet = 0, int settingType = 1);
 
 	// удал€ем плохо поставленный корабль
-	void removeShip(field& Field, cordinates cord);
+	void removeShip(field& Field, coordinates cord);
 	
 	// перезаписываем 2 в правильно поставленном корабле на settingType
-	void confirmShip(field& Field, cordinates cord, int settingType);
+	void confirmShip(field& Field, coordinates cord, int settingType);
 
 	// ищем кординату, чтобы добить подбитый корабль достроить подбитый корабль
-	cordinates setWoundedShip(field& Field, cordinates startCord);
+	coordinates setWoundedShip(field& Field, coordinates startCord);
 
 	// функци€ расчета лучшего выстрела
-	cordinates ChooseBestShot(field Field);
+	coordinates ChooseBestShot(field Field);
 
 	// посчитать веро€тности на поле
 	field calculateChances(field Field);

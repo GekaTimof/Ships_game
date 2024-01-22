@@ -52,8 +52,6 @@ Game::Game() {
     }
 
     this->gameStart();
-    //cordinates BestShot = ChooseBestShot(this->testBotsField);
-    //cout << BestShot.x << ":" << BestShot.y << "\n";
 }
 
 
@@ -64,7 +62,7 @@ void Game::gameStart() {
 
     //Пока не конец игры
     while (!gameEnd(this->botField) && !gameEnd(this->userField)) {
-        while (isFirst){
+        while (isFirst) {
             system("cls");
 
             cout << "---ВАШЕ ПОЛЕ---\n";
@@ -75,10 +73,10 @@ void Game::gameStart() {
             cout << "Ваш выстрел(NN): ";
 
             //Преобразуем координаты пользователя
-            cordinates xy;
+            coordinates xy;
             string s_xy;
             cin >> s_xy;
-            while ((size(s_xy) != 2) || s_xy[1] < 48 || s_xy[1]>57 || s_xy[0] < 65 || s_xy[0] >74){
+            while ((size(s_xy) != 2) || s_xy[1] < 48 || s_xy[1]>57 || s_xy[0] < 65 || s_xy[0] >74) {
                 cout << "Неверный формат ввода, введите координаты как в примере: А2\n";
                 cin >> s_xy;
             }
@@ -106,18 +104,27 @@ void Game::gameStart() {
 
             isFirst = doShot(isFirst, xy);
         }
-        while (!isFirst){
+        while (!isFirst) {
             cout << "\nВыстрел бота (Подождите несколько секунд): \n";
 
-            cordinates BestShot = ChooseBestShot(this->testBotsField);
+            coordinates BestShot = ChooseBestShot(this->testBotsField);
             isFirst = doShot(isFirst, BestShot);
         }
+    }
+    system("cls");
+    if (gameEnd(this->botField))
+    {
+        cout << "Вы выиграли! :)";
+    }
+    else
+    {
+        cout << "Вы проиграли :(";
     }
 }
 
 
 
-bool Game::doShot(int player, cordinates xy) {
+bool Game::doShot(int player, coordinates xy) {
     if (player == 1) {
         //Проверка, не занята ли клетка
         if (this->botField.Field[xy.x][xy.y] < 0) {
@@ -277,7 +284,7 @@ bool Game::setAllShipsForGoodStart(field& Field) {
                 }
 
 
-                cordinates cord;
+                coordinates cord;
                 // берём случайную кординату у края для больших кораблей
                 if (type >= 1) {
                     bool XorY = rand() % 2;
@@ -351,7 +358,7 @@ bool Game::setAllShips(field& Field, int settingType) {
 
 
                 // берём случайную кординату
-                cordinates cord;
+                coordinates cord;
 
                 if (cord.x == -1) {
                     cord.x = rand() % 10;
@@ -390,7 +397,7 @@ bool Game::setAllShips(field& Field, int settingType) {
 
 
 // попытаться поставить корабль нужного размера на нужные кординаты 
-int Game::setShip(field& Field, cordinates startCord, const int size, int alreadySet, int settingType) {
+int Game::setShip(field& Field, coordinates startCord, const int size, int alreadySet, int settingType) {
     // если все палубы поставлены 
     if (size == alreadySet) {
         return alreadySet;
@@ -409,7 +416,7 @@ int Game::setShip(field& Field, cordinates startCord, const int size, int alread
         move = rand() % 4;
         //cout << startCord.x << " - " << startCord.y << " " << move << "\n";
 
-        cordinates newCord;
+        coordinates newCord;
         newCord.x = startCord.x + Field.moves[move][0];
         newCord.y = startCord.y + Field.moves[move][1];
 
@@ -452,8 +459,8 @@ int Game::setShip(field& Field, cordinates startCord, const int size, int alread
 
 
 // ищем кординату, чтобы добить подбитый корабль достроить подбитый корабль
-cordinates Game::setWoundedShip(field& Field, cordinates startCord) {
-    cordinates emptyCoers;
+coordinates Game::setWoundedShip(field& Field, coordinates startCord) {
+    coordinates emptyCoers;
 
     // проверяем начальную кординату 
     if (Field.Field[startCord.x][startCord.y] == -2) {
@@ -466,14 +473,14 @@ cordinates Game::setWoundedShip(field& Field, cordinates startCord) {
         move = rand() % 4;
 
         // кордината для шага
-        cordinates newCord;
+        coordinates newCord;
         newCord.x = startCord.x + Field.moves[move][0];
         newCord.y = startCord.y + Field.moves[move][1];
 
         // проверяем не вышли ли мы за пределы поля
         if (newCord.x >= 0 && newCord.x <= 9 && newCord.y >= 0 && newCord.y <= 9) {
             // идём в соседнюю кординату
-            cordinates testCoed = setWoundedShip(Field, newCord);
+            coordinates testCoed = setWoundedShip(Field, newCord);
 
             // проверяем, какая пришла кордината (если не пустая, это ответ, который мы возвращаем)
             if (testCoed.x != -1) {
@@ -492,7 +499,7 @@ cordinates Game::setWoundedShip(field& Field, cordinates startCord) {
             // проверяем не вышли ли мы за пределы поля
             if (newCord.x >= 0 && newCord.x <= 9 && newCord.y >= 0 && newCord.y <= 9) {
                 // идём в соседнюю кординату
-                cordinates testCoed = setWoundedShip(Field, newCord);
+                coordinates testCoed = setWoundedShip(Field, newCord);
 
                 // проверяем, какая пришла кордината (если не пустая, это ответ, который мы возвращаем)
                 if (testCoed.x != -1) {
@@ -512,7 +519,7 @@ cordinates Game::setWoundedShip(field& Field, cordinates startCord) {
 
 
 // удаляем плохо поставленный корабль
-void Game::removeShip(field& Field, cordinates cord) {
+void Game::removeShip(field& Field, coordinates cord) {
     // если клетка содержит часть правильно поставленного корабля
     if (Field.Field[cord.x][cord.y] == 2) {
         Field.Field[cord.x][cord.y] = 0;
@@ -520,7 +527,7 @@ void Game::removeShip(field& Field, cordinates cord) {
         // выбираем шаг (вверх, вниз, влево, вправо)
         for (int move = 0; move < 4; move++) {
 
-            cordinates newCord;
+            coordinates newCord;
             newCord.x = cord.x + Field.moves[move][0];
             newCord.y = cord.y + Field.moves[move][1];
 
@@ -537,7 +544,7 @@ void Game::removeShip(field& Field, cordinates cord) {
 
 
 // перезаписываем 2 в правильно поставленном корабле на settingType
-void Game::confirmShip(field& Field, cordinates cord, int settingType) {
+void Game::confirmShip(field& Field, coordinates cord, int settingType) {
     // если клетка содержит часть правильно поставленного корабля
     if (Field.Field[cord.x][cord.y] == 2) {
         Field.Field[cord.x][cord.y] = settingType;
@@ -545,7 +552,7 @@ void Game::confirmShip(field& Field, cordinates cord, int settingType) {
         // выбираем шаг (вверх, влево, вниз, вправо)
         for (int move = 0; move < 4; move++) {
 
-            cordinates newCord;
+            coordinates newCord;
             newCord.x = cord.x + Field.moves[move][0];
             newCord.y = cord.y + Field.moves[move][1];
 
@@ -562,13 +569,13 @@ void Game::confirmShip(field& Field, cordinates cord, int settingType) {
 
 
 // функция расчета лучшего выстрела
-cordinates Game::ChooseBestShot(field Field) {
+coordinates Game::ChooseBestShot(field Field) {
     // кординаты для оптимального выстрела
-    cordinates BestShot;
+    coordinates BestShot;
 
     // проверяем, есть ли раненые корабли, если есть, пытаемся его добить
     if (checkWoundedShips(Field).x != -1) {
-        cordinates WoundedShipsCord = checkWoundedShips(Field);
+        coordinates WoundedShipsCord = checkWoundedShips(Field);
 
         BestShot = setWoundedShip(Field, WoundedShipsCord);
 
@@ -743,7 +750,7 @@ field Game::calculateChances(field Field) {
 
 
 // функция определяет, есть ли вокруг ячейки корабли (не учитывает повреждённые корабли)
-bool Game::isFree(field& Field, cordinates xy) {
+bool Game::isFree(field& Field, coordinates xy) {
     if (((xy.y == 0) || (Field.Field[xy.x][xy.y - 1] == 0) || (Field.Field[xy.x][xy.y - 1] == 2) || (Field.Field[xy.x][xy.y - 1] == -1) || (Field.Field[xy.x][xy.y - 1] == -2)) &&
         ((xy.y == 9) || (Field.Field[xy.x][xy.y + 1] == 0) || (Field.Field[xy.x][xy.y + 1] == 2) || (Field.Field[xy.x][xy.y + 1] == -1) || (Field.Field[xy.x][xy.y + 1] == -2)) &&
         ((xy.x == 0) || (Field.Field[xy.x - 1][xy.y] == 0) || (Field.Field[xy.x - 1][xy.y] == 2) || (Field.Field[xy.x - 1][xy.y] == -1) || (Field.Field[xy.x - 1][xy.y] == -2)) &&
@@ -763,8 +770,8 @@ bool Game::isFree(field& Field, cordinates xy) {
 
 
 //Смотрит, убит ли данным выстрелом корабль (1 - убит, 0 - ранен)
-bool Game::isKilled(field Field, cordinates xy) {
-    cordinates XY;
+bool Game::isKilled(field Field, coordinates xy) {
+    coordinates XY;
 
     bool res = 1;
 
@@ -815,8 +822,8 @@ bool Game::isKilled(field Field, cordinates xy) {
 
 
 //Убивает весь корабль выстрелом
-int Game::doKilling(field& Field, cordinates xy, int count) {
-    cordinates XY;
+int Game::doKilling(field& Field, coordinates xy, int count) {
+    coordinates XY;
     Field.Field[xy.x][xy.y] = -3;
     count++;
 
@@ -876,8 +883,8 @@ int Game::doKilling(field& Field, cordinates xy, int count) {
 
 
 
-cordinates Game::checkWoundedShips(field Field) {
-    cordinates XY;
+coordinates Game::checkWoundedShips(field Field) {
+    coordinates XY;
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
             if (Field.Field[i][j] == -2) {
