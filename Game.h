@@ -1,6 +1,7 @@
 #ifndef SHIPS_GAME
 #define SHIPS_GAME
 #include <fstream>
+#include <string>
 #include <iostream>
 
 // структера для хранения кординат
@@ -79,12 +80,18 @@ class Game {
 	// посчитать вероятности на поле
 	field calculateChances(field Field);
 
+	// проверка поля пользователя (есть ли файл и правильно ли он заполнен)
+	bool readUserField(field& Field, const char* link);
+
+	// функция ищет размер корабля и удаляет его с поля
+	int shipSize(field& Field, coordinates startCord);
+
 public:
 	// создание игры (создаем и заполняем поля для игроков)
 	Game();
 
 	// запуск игры
-	void gameStart();
+	bool gameStart();
 };
 
 #endif

@@ -6,32 +6,132 @@
 #include "Game.h" 
 
 using namespace std;
-
-Game::Game() {
+// проверка поля пользователя (есть ли файл и правильно ли он заполнен)
+bool Game::readUserField(field& Field, const char* link) {
     //Задаём поле игрока из файла
     ifstream file;
-    file.open("user.txt");
+    file.open(link);
 
     //Проверяем что файл открылся
     if (!file) {
         cout << "Не удалось открыть файл пользователя\n";
+        return false;
     }
     else {
-        string s;
         cout << "Файл считан.\n";
+        string s;
 
+        // читаем файл построчно 
         for (int i = 0; i < 10; i++) {
             getline(file, s);
-            for (int j = 0; j < 10; j++) {
-                if (!isspace(s[j])) {
-                    //Записываем в массив если не пробельный символ
-                    this->userField.Field[j][i] = s[j] - '0';
+
+            // символы в строке
+            int RightSymbols = 0;
+
+            // идём до конца строки
+            for (int j = 0; j < s.length(); j++) {
+                // проверяем что символ 1 или 0 (счилаем их количество)
+                if ((s[j] - '0' == 0 or s[j] - '0' == 1) and RightSymbols < 10 and i < 10) {
+                    // записываем символ в поле
+                    Field.Field[RightSymbols][i] = s[j] - '0';
+                    RightSymbols++;
+                }
+            }
+
+            if (RightSymbols == 0) {
+                RightSymbols++;
+            }
+
+            // если нам не хватило символов доставим 0
+            if (RightSymbols < 10 and i < 10) {
+                for (int j = RightSymbols - 1; j < 10; j++) {
+                    Field.Field[j][i] = 0;
+                }
+            }
+        }
+
+    }
+    file.close(); //Закрываем файл
+
+    // дублируем поле для проверки
+    field testField = Field;
+
+    // считаем количество кораблей на поле
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            // если нашли корабль, ищем его размер (после он будет удален)
+            if (Field.Field[j][i] == 1) {
+                coordinates startCord;
+                startCord.x = j;
+                startCord.y = i;
+
+                int size = shipSize(testField, startCord);
+                
+
+                if (size <= 4) {
+                    // уменьшаем количество найденого типа корабля
+                    testField.ships[size-1]--;
+                    
+                }
+                else {
+                    cout << "слишком большой корабль \n";
+                    return false;
                 }
             }
         }
     }
-    file.close(); //Закрываем файл
 
+    // проверяем количество кораблей на поле
+    for (int i = 0; i < 4; i++) {
+        if (testField.ships[i] != 0) {
+            cout << "слишком много корабль \n";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// функция ищет размер корабля и удаляет его с поля
+int Game::shipSize(field& Field, coordinates startCord) {
+    int size = 0;
+
+    if (Field.Field[startCord.x][startCord.y] == 1) {
+        Field.Field[startCord.x][startCord.y] = 0;
+        size++;
+    }
+    else {
+        return 0;
+    }
+
+    coordinates newCord;
+    // пробуем идти в 3 другие стороны
+    for (int move = 0; move < 4; move++) {
+
+        newCord.x = startCord.x + Field.moves[move][0];
+        newCord.y = startCord.y + Field.moves[move][1];
+
+        // проверяем не вышли ли мы за пределы поля
+        if (newCord.x >= 0 && newCord.x <= 9 && newCord.y >= 0 && newCord.y <= 9) {
+            size += shipSize(Field, newCord);
+        }
+    }
+
+    return size;
+}
+
+
+
+Game::Game() {
+    //Задаём поле игрока из файла
+    // проверяем что всё работает корректно 
+    if (!(readUserField(this->userField, "user.txt"))) {
+        cout << " в вашем файле ошибка, попробуйте заново или воспользуйтесь полем созданным автоматически ";
+        // расставляем корабли на поле 
+        setAllShipsForGoodStart(this->userField);
+    }
+    print(this->userField, 0);
+    system("pause");
 
     //Задаём пустое поле бота
     for (int i = 0; i < 10; i++) {
@@ -51,12 +151,12 @@ Game::Game() {
         }
     }
 
-    this->gameStart();
+    //this->gameStart();
 }
 
 
 
-void Game::gameStart() {
+bool Game::gameStart() {
     //Чей чейчас ход (1-юзера, 0 - бота)
     bool isFirst = 1;
 
@@ -69,6 +169,13 @@ void Game::gameStart() {
             print(this->userField, 0);
             cout << "---ПОЛЕ БОТА---\n"; //НАЧАТЬ ВЫВОДИТЬ ПО-ДРУГОМУ
             print(this->botField, 1);
+
+            if (gameEnd(this->botField))
+            {
+                cout << "\nИгрок выиграл\n";
+                return 1;
+            }
+
 
             cout << "Ваш выстрел(NN): ";
 
@@ -104,9 +211,13 @@ void Game::gameStart() {
 
             isFirst = doShot(isFirst, xy);
         }
-        if (gameEnd(this->botField))
-            break;
         while (!isFirst) {
+            if (gameEnd(this->userField))
+            {
+                cout << "\nБот выиграл\n";
+                return 1;
+            }
+
             cout << "\nВыстрел бота (Подождите несколько секунд): \n";
 
             coordinates BestShot = ChooseBestShot(this->testBotsField);
@@ -214,7 +325,6 @@ bool Game::doShot(int player, coordinates xy) {
     }
 
 }
-
 
 
 

@@ -1,8 +1,9 @@
 ﻿#include <iostream>
+#include <string>
 #include "Game.h"
 using namespace std;
 
-int main() {
+void main() {
 	setlocale(LC_ALL, "Rus");
 	srand(time(NULL)); //Чтобы рандом был рандомным
 
@@ -14,5 +15,6 @@ int main() {
 
 	cout << "Programm End" << "\n";
 	
+
 }
 
