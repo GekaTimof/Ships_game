@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bot.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>

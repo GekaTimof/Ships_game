@@ -4,6 +4,17 @@
 #include <string>
 #include <iostream>
 
+// размер поля
+const int X = 10;
+const int Y = 10;
+
+// ограничения на число итераций для попыток поставить один корабль корабля (что-бы не попасть в цикл)
+const int Iteration_Limit = 100;
+
+// количество тестовых раскладов при расчёте энтропии
+const int Iteration_Test = 500;
+
+
 // структера для хранения кординат
 struct coordinates {
 	int x = -1;
@@ -14,7 +25,7 @@ struct coordinates {
 // структера для хранения полей (и количества кораблей каждого типа)
 struct field {
 	// поле 
-	int Field[10][10];
+	int Field[X][Y];
 
 	// количество типов кораблей
 	int shipTipesCount = 4;
@@ -35,8 +46,11 @@ class Game {
 
 	// поле бота
 	field botField;
+
 	// поле для расчётов бота (то, как бот видит поле игрока)
 	field testBotsField;
+
+
 
 	// функция определяет, есть ли вокруг ячейки корабли 
 	bool isFree(field& Field, coordinates cord);
@@ -74,8 +88,11 @@ class Game {
 	// ищем кординату, чтобы добить подбитый корабль достроить подбитый корабль
 	coordinates setWoundedShip(field& Field, coordinates startCord);
 
-	// функция расчета лучшего выстрела
-	coordinates ChooseBestShot(field Field);
+	// функция поиска случайной пустой кординаты
+	coordinates randomCoordinates(field Field);
+
+	// функция расчёта энтропии на поле
+	float calculateEntropy(field Field);
 
 	// посчитать вероятности на поле
 	field calculateChances(field Field);
@@ -85,6 +102,15 @@ class Game {
 
 	// функция ищет размер корабля и удаляет его с поля
 	int shipSize(field& Field, coordinates startCord);
+
+	// функция расчета лучшего выстрела через случайность
+	coordinates ChooseBestShot_Random(field Field);
+
+	// функция расчета лучшего выстрела через тактику расстановки кораблей по крайам
+	coordinates ChooseBestShot_BorderTactic(field Field);
+
+	// функция расчета лучшего выстрела через энтропию
+	coordinates ChooseBestShot_Entropy(field Field);
 
 public:
 	// создание игры (создаем и заполняем поля для игроков)
