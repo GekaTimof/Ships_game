@@ -6,150 +6,90 @@
 #include "Game.h" 
 
 using namespace std;
-// проверка поля пользователя (есть ли файл и правильно ли он заполнен)
-bool Game::readUserField(field& Field, const char* link) {
-    //Задаём поле игрока из файла
-    ifstream file;
-    file.open(link);
-
-    //Проверяем что файл открылся
-    if (!file) {
-        cout << "Не удалось открыть файл пользователя\n";
-        return false;
-    }
-    else {
-        cout << "Файл считан.\n";
-        string s;
-
-        // читаем файл построчно 
-        for (int i = 0; i < 10; i++) {
-            getline(file, s);
-
-            // символы в строке
-            int RightSymbols = 0;
-
-            // идём до конца строки
-            for (int j = 0; j < s.length(); j++) {
-                // проверяем что символ 1 или 0 (счилаем их количество)
-                if ((s[j] - '0' == 0 or s[j] - '0' == 1) and RightSymbols < 10 and i < 10) {
-                    // записываем символ в поле
-                    Field.Field[RightSymbols][i] = s[j] - '0';
-                    RightSymbols++;
-                }
-            }
-
-            if (RightSymbols == 0) {
-                RightSymbols++;
-            }
-
-            // если нам не хватило символов доставим 0
-            if (RightSymbols < 10 and i < 10) {
-                for (int j = RightSymbols - 1; j < 10; j++) {
-                    Field.Field[j][i] = 0;
-                }
-            }
-        }
-
-    }
-    file.close(); //Закрываем файл
-
-    // дублируем поле для проверки
-    field testField = Field;
-
-    // считаем количество кораблей на поле
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            // если нашли корабль, ищем его размер (после он будет удален)
-            if (Field.Field[j][i] == 1) {
-                coordinates startCord;
-                startCord.x = j;
-                startCord.y = i;
-
-                int size = shipSize(testField, startCord);
-                
-
-                if (size <= 4) {
-                    // уменьшаем количество найденого типа корабля
-                    testField.ships[size-1]--;
-                    
-                }
-                else {
-                    cout << "слишком большой корабль \n";
-                    return false;
-                }
-            }
-        }
-    }
-
-    // проверяем количество кораблей на поле
-    for (int i = 0; i < 4; i++) {
-        if (testField.ships[i] != 0) {
-            cout << "слишком много корабль \n";
-            return false;
-        }
-    }
-
-    return true;
-}
 
 Game::Game() {
-    //Задаём поле игрока из файла
-    // проверяем что всё работает корректно 
-    if (!(readUserField(this->userField, "user.txt"))) {
-        cout << " в вашем файле ошибка, попробуйте заново или воспользуйтесь полем созданным автоматически ";
-        // расставляем корабли на поле 
-        setAllShipsForGoodStart(this->userField);
+    //Задаём пустое поле 1 бота
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            this->guestField.Field[i][j] = 0;
+        }
     }
-    print(this->userField, 0);
-    system("pause");
 
-    //Задаём пустое поле бота
+    // расставляем корабли на поле 1
+    setAllShipsForGoodStart(this->guestField);
+
+    // создаем пустое тестовое поле для расчётов 1 бота
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            this->testGuestField.Field[i][j] = 0;
+        }
+    }
+
+
+    //Задаём пустое поле 2 бота
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
             this->botField.Field[i][j] = 0;
         }
     }
 
-    // расставляем корабли на поле 
+    // расставляем корабли на поле 2
     setAllShipsForGoodStart(this->botField);
 
-
-    // создаем пустое тестовое поле для расчётов бота
+    // создаем пустое тестовое поле для расчётов 2 бота
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
             this->testBotsField.Field[i][j] = 0;
         }
     }
-
-    //this->gameStart();
 }
 
 
 
 bool Game::gameStart() {
     //Чей чейчас ход (1-юзера, 0 - бота)
-    bool isFirst = 1;
+    bool isFirst = 0;
 
     //Пока не конец игры
-    while (!gameEnd(this->botField) && !gameEnd(this->userField)) {
-        while (isFirst) {
-            system("cls");
-
-            cout << "---ВАШЕ ПОЛЕ---\n";
-            print(this->userField, 0);
-            cout << "---ПОЛЕ БОТА---\n"; //НАЧАТЬ ВЫВОДИТЬ ПО-ДРУГОМУ
-            print(this->botField, 1);
+    while (!gameEnd(this->botField) && !gameEnd(this->guestField))
+    {
+        while (isFirst)
+        {
+            //Выводим в файл тоже, лиюо только в консоль
+            if (fileout)
+            {
+                //fout << "---ПОЛЕ ГОСТЯ---\n";
+                print(this->guestField, 0, 1);
+                //fout << "---ПОЛЕ БОТА---\n";
+                print(this->botField, 1, 1);
+            }
+            else
+            {
+                cout << "---ПОЛЕ ГОСТЯ---\n";
+                print(this->guestField, 0, 0);
+                cout << "---ПОЛЕ БОТА---\n";
+                print(this->botField, 0, 0);
+                if (withStops)
+                    system("pause");
+            }
 
             if (gameEnd(this->botField))
             {
-                cout << "\nИгрок выиграл\n";
+                cout << "\nГость выиграл\n";
+                //if (fileout)
+                    //fout << "\nГость выиграл\n";
                 return 1;
             }
 
+            cout << "Выстрел гостя: ";
+            //if (fileout)
+                //fout << "Выстрел гостя: ";
 
-            cout << "Ваш выстрел(NN): ";
+            coordinates guestBestShot = ChooseBestShot_Random(this->testGuestField);
+            isFirst = doShot(isFirst, guestBestShot);
 
-            //Преобразуем координаты пользователя
+            /*
+            ВВОД ДЛЯ ЮЗЕРА
             coordinates xy;
             string s_xy;
             cin >> s_xy;
@@ -179,62 +119,50 @@ bool Game::gameStart() {
             else if (s_xy[0] == 'J')
                 xy.x = 9;
 
-            isFirst = doShot(isFirst, xy);
+            isFirst = doShot(isFirst, xy);*/
+
         }
-        while (!isFirst) {
-            if (gameEnd(this->userField))
+        while (!isFirst)
+        {
+            if (gameEnd(this->guestField))
             {
                 cout << "\nБот выиграл\n";
+                //if (fileout)
+                    //fout << "\nБот выиграл\n";
                 return 1;
             }
 
             cout << "\nВыстрел бота (Подождите несколько секунд): \n";
+            //if (fileout)
+                //fout << "\nВыстрел бота (Подождите несколько секунд): \n";
 
-            coordinates BestShot = ChooseBestShot_Random(this->testBotsField);
+            coordinates BestShot = ChooseBestShot_Entropy(this->testBotsField);
             isFirst = doShot(isFirst, BestShot);
         }
+
     }
-    system("cls");
+    //if (withStops)
+        //system("cls");
+
     if (gameEnd(this->botField))
     {
         cout << "Вы проиграли :(";
+        //if (fileout)
+            //fout << "Вы проиграли :(";
     }
     else
     {
         cout << "Вы выиграли! :)";
+        //if (fileout)
+            //fout << "Вы выиграли! :)";
     }
 }
 
 
 
-bool Game::doShot(int player, coordinates xy) {
-    if (player == 1) {
-        //Проверка, не занята ли клетка
-        if (this->botField.Field[xy.x][xy.y] < 0) {
-            cout << "\nВы уже стреляли в эту клетку. Выберете другую.\n";
-            return 1;
-        }
-
-        if (this->botField.Field[xy.x][xy.y] == 0) {
-            cout << "\nМимо\n";
-            botField.Field[xy.x][xy.y] = -1;
-            return 0;
-        }
-        else if (this->botField.Field[xy.x][xy.y] > 0) {
-            if (isKilled(botField, xy)) {
-                cout << "\nУбит!\n";
-                int a = doKilling(botField, xy, 0);
-                this->botField.ships[a - 1]--;
-                return 1;
-            }
-            else {
-                cout << "\nРанен\n";
-                botField.Field[xy.x][xy.y] = -2;
-                return 1;
-            }
-        }
-    }
-    if (player == 0)
+bool Game::doShot(int player, coordinates xy)
+{
+    if (player == 1) //выстрел по боту
     {
         char a = 'Z';
         if (xy.x == 0)
@@ -258,37 +186,126 @@ bool Game::doShot(int player, coordinates xy) {
         else if (xy.x == 9)
             a = 'J';
 
-
-        if (a == 'Z') {
-            cout << "\n\n" << xy.x << " " << "\n\n";
-        }
         cout << "\n" << a << xy.y;
+        //if (fileout)
+            //fout << "\n" << a << xy.y;
 
-        if (this->userField.Field[xy.x][xy.y] == 0) {
+        if (this->botField.Field[xy.x][xy.y] == 0)
+        {
             cout << "\nМимо\n";
+            //if (fileout)
+                //fout << "\nМимо\n";
+
+            testGuestField.Field[xy.x][xy.y] = -1;
+            botField.Field[xy.x][xy.y] = -1;
+
+
+            if (withStops)
+                system("pause");
+
+            cout << "ВОТ ТАК ВЫГЛЯДИТ ТЕСТОВОЕ ПОЛЕ ГОСТЯ";
+            print(testGuestField, 0, 0);
+            return 0;
+        }
+        else if (this->botField.Field[xy.x][xy.y] > 0) {
+            if (isKilled(botField, xy)) {
+                cout << "\nУбит!\n";
+                //if (fileout)
+                    //fout << "\nУбит!\n";
+                int a = doKilling(botField, xy, 0);
+                a = doKilling(testGuestField, xy, 0);
+                this->botField.ships[a - 1]--;
+                this->testGuestField.ships[a - 1]--;
+
+                if (withStops)
+                    system("pause");
+
+                return 1;
+            }
+            else {
+                cout << "\nРанен\n";
+                botField.Field[xy.x][xy.y] = -2;
+                testGuestField.Field[xy.x][xy.y] = -2;
+
+                if (withStops)
+                    system("pause");
+                cout << "ВОТ ТАК ВЫГЛЯДИТ ТЕСТОВОЕ ПОЛЕ ГОСТЯ";
+                print(testGuestField, 0, 0);
+
+                return 1;
+            }
+        }
+    }
+    if (player == 0) //выстрел по гостю
+    {
+        char a = 'Z';
+        if (xy.x == 0)
+            a = 'A';
+        else if (xy.x == 1)
+            a = 'B';
+        else if (xy.x == 2)
+            a = 'C';
+        else if (xy.x == 3)
+            a = 'D';
+        else if (xy.x == 4)
+            a = 'E';
+        else if (xy.x == 5)
+            a = 'F';
+        else if (xy.x == 6)
+            a = 'G';
+        else if (xy.x == 7)
+            a = 'H';
+        else if (xy.x == 8)
+            a = 'I';
+        else if (xy.x == 9)
+            a = 'J';
+
+        cout << "\n" << a << xy.y;
+        //if (fileout)
+            //fout << "\n" << a << xy.y;
+
+        if (this->guestField.Field[xy.x][xy.y] == 0)
+        {
+            cout << "\nМимо\n";
+            //if (fileout)
+                //fout << "\nМимо\n";
+
             testBotsField.Field[xy.x][xy.y] = -1;
-            userField.Field[xy.x][xy.y] = -1;
-            print(testBotsField, 1);
-            system("pause");
+            guestField.Field[xy.x][xy.y] = -1;
+
+
+            if (withStops)
+                system("pause");
+
             return 1;
         }
-        else if (this->userField.Field[xy.x][xy.y] > 0) {
-            if (isKilled(userField, xy)) {
+        else if (this->guestField.Field[xy.x][xy.y] > 0) {
+            if (isKilled(guestField, xy)) {
                 cout << "\nУбит!\n";
-                int a = doKilling(userField, xy, 0);
+                //if (fileout)
+                    //fout << "\nУбит!\n";
+                int a = doKilling(guestField, xy, 0);
                 a = doKilling(testBotsField, xy, 0);
-                this->userField.ships[a - 1]--;
+                this->guestField.ships[a - 1]--;
                 this->testBotsField.ships[a - 1]--;
-                print(testBotsField, 1);
-                system("pause");
+
+
+                if (withStops)
+                    system("pause");
+
                 return 0;
             }
             else {
                 cout << "\nРанен\n";
-                userField.Field[xy.x][xy.y] = -2;
+                guestField.Field[xy.x][xy.y] = -2;
                 testBotsField.Field[xy.x][xy.y] = -2;
-                print(testBotsField, 1);
-                system("pause");
+
+                if (withStops)
+                    system("pause");
+
+                cout << "ВОТ ТАК ВЫГЛЯДИТ ТЕСТОВОЕ ПОЛЕ БОТА";
+                print(testBotsField, 0, 0);
+
                 return 0;
             }
         }
@@ -298,32 +315,58 @@ bool Game::doShot(int player, coordinates xy) {
 
 
 
-void print(field Field, bool shipVizible) {
+
+void Game::print(field Field, bool shipVizible, bool toFile) {
     cout << "Оставшиеся корабли: ";
+    //if (fileout)
+        //fout << "Оставшиеся корабли: ";
+
     for (int i = 0; i < Field.shipTipesCount; i++) {
         cout << i + 1 << "-палубные(" << Field.ships[i] << ") ";
+        //if (fileout)
+           // fout << i + 1 << "-палубные(" << Field.ships[i] << ") ";
     }
     cout << "\n";
     cout << "     A B C D E F G H I J\n";
+    //if (fileout)
+    //{
+        //fout << "\n";
+        //fout << "     A B C D E F G H I J\n";
+    //}
     for (int j = 0; j < 10; j++) {
         cout << "(" << j << ")  ";
+        //if (fileout)
+            //fout << "(" << j << ")  ";
+
         for (int i = 0; i < 10; i++) {
             if (Field.Field[i][j] == 0) {
+                //if (fileout)
+                    //fout << '-' << ' ';
                 cout << '-' << ' ';
             }
             else if (shipVizible == 0 && Field.Field[i][j] == 1) {
+                //if (fileout)
+                    //fout << 1 << ' ';
                 cout << 1 << ' ';
             }
             else if (shipVizible == 1 && Field.Field[i][j] == 1) {
+                //if (fileout)
+                    //fout << '-' << ' ';
                 cout << '-' << ' ';
             }
             else if (Field.Field[i][j] == -1) {
+                //if (fileout)
+                    //fout << 0 << ' ';
                 cout << 0 << ' ';
             }
             else if (Field.Field[i][j] == -2) {
+                //if (fileout)
+                    //fout << 'x' << ' ';
                 cout << 'x' << ' ';
             }
             else if (Field.Field[i][j] == -3) {
+                //if (fileout)
+                    //fout << 'X' << ' ';
                 cout << 'X' << ' ';
             }
         }
@@ -331,7 +374,6 @@ void print(field Field, bool shipVizible) {
     }
     cout << '\n';
 }
-
 
 bool Game::gameEnd(field Field) {
     for (int i = 0; i < Field.shipTipesCount; i++) {

@@ -572,8 +572,8 @@ coordinates Game::ChooseBestShot_Entropy(field Field) {
     }
 }
 
-// функция расчета лучшего выстрела через тактику расстановки кораблей по крайам
-coordinates ChooseBestShot_BorderTactic(field Field) {
-
-
-}
+//// функция расчета лучшего выстрела через тактику расстановки кораблей по крайам
+//coordinates ChooseBestShot_BorderTactic(field Field) {
+//
+//
+//}

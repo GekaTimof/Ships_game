@@ -14,6 +14,11 @@ const int Iteration_Limit = 100;
 // количество тестовых раскладов при расчёте энтропии
 const int Iteration_Test = 500;
 
+//вывод в файл(1) или в консоль(0)
+const bool fileout = 0;
+
+//выводить непрерывно или с остановками
+const bool withStops = 0;
 
 // структера для хранения кординат
 struct coordinates {
@@ -42,12 +47,16 @@ void print(field Field, bool shipVizible);
 
 class Game {
 	// поле пользователя
-	field userField;
+	// поле гостевого бота
+	field guestField;
 
-	// поле бота
+	// поле для рассчетов гостевого бота (то, как гостевой бот видит поле встроенного бота)
+	field testGuestField;
+
+	// поле встроенного бота
 	field botField;
 
-	// поле для расчётов бота (то, как бот видит поле игрока)
+	// поле для расчётов встроенного бота (то, как встроенный бот видит поле игрока)
 	field testBotsField;
 
 
@@ -67,8 +76,8 @@ class Game {
 	// проверяем заончилась ли игра (на поле не осталось клеток со значениями > 0)
 	bool gameEnd(field Field);
 
-	// функция для вызстрела соперника 
-	bool doShot(int playerNum, coordinates cord); // playerNum => 0 - вастрел по игроку, 1 - выстрел по боту 
+	// функция для выстрела 
+	bool doShot(int playerNum, coordinates cord); // playerNum => 0 - выстрел по гостю, 1 - выстрел по боту 
 
 	// поставить на поле все необходимые корабли
 	bool setAllShips(field& Field, int settingType = 1);
@@ -81,7 +90,7 @@ class Game {
 
 	// удаляем плохо поставленный корабль
 	void removeShip(field& Field, coordinates cord);
-	
+
 	// перезаписываем 2 в правильно поставленном корабле на settingType
 	void confirmShip(field& Field, coordinates cord, int settingType);
 
@@ -97,8 +106,8 @@ class Game {
 	// посчитать вероятности на поле
 	field calculateChances(field Field);
 
-	// проверка поля пользователя (есть ли файл и правильно ли он заполнен)
-	bool readUserField(field& Field, const char* link);
+	// проверка введенного поля из файла (есть ли файл и правильно ли он заполнен)
+	bool readGuestField(field& Field, const char* link);
 
 	// функция ищет размер корабля и удаляет его с поля
 	int shipSize(field& Field, coordinates startCord);
@@ -106,11 +115,14 @@ class Game {
 	// функция расчета лучшего выстрела через случайность
 	coordinates ChooseBestShot_Random(field Field);
 
-	// функция расчета лучшего выстрела через тактику расстановки кораблей по крайам
+	// функция расчета лучшего выстрела через тактику расстановки кораблей по краям
 	coordinates ChooseBestShot_BorderTactic(field Field);
 
 	// функция расчета лучшего выстрела через энтропию
 	coordinates ChooseBestShot_Entropy(field Field);
+
+	//Вывод поля
+	void print(field Field, bool shipVizible, bool toFile);
 
 public:
 	// создание игры (создаем и заполняем поля для игроков)
