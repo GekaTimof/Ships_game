@@ -16,7 +16,7 @@ Game::Game() {
     }
 
     // расставляем корабли на поле 1
-    setAllShipsForGoodStart(this->guestField);
+    setAllShips_HalfTactic(this->guestField, 0);
 
     // создаем пустое тестовое поле для расчётов 1 бота
     for (int i = 0; i < 10; i++) {
@@ -24,6 +24,8 @@ Game::Game() {
             this->testGuestField.Field[i][j] = 0;
         }
     }
+
+
 
 
     //Задаём пустое поле 2 бота
@@ -34,7 +36,7 @@ Game::Game() {
     }
 
     // расставляем корабли на поле 2
-    setAllShipsForGoodStart(this->botField);
+    setAllShips_HalfTactic(this->botField, 3);
 
     // создаем пустое тестовое поле для расчётов 2 бота
     for (int i = 0; i < 10; i++) {
@@ -42,6 +44,14 @@ Game::Game() {
             this->testBotsField.Field[i][j] = 0;
         }
     }
+
+
+
+    cout << "---ПОЛЕ ГОСТЯ---\n";
+    print(this->guestField, 0, 0);
+    cout << "---ПОЛЕ БОТА---\n";
+    print(this->botField, 0, 0);
+    system("pause");
 }
 
 
@@ -62,6 +72,7 @@ bool Game::gameStart() {
                 print(this->guestField, 0, 1);
                 //fout << "---ПОЛЕ БОТА---\n";
                 print(this->botField, 1, 1);
+                
             }
             else
             {

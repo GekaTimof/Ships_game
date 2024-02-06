@@ -37,8 +37,57 @@ int Game::shipSize(field& Field, coordinates startCord) {
 
 
 
-// поставить на поле все необходимые корабли (расставляем корабли на поле бота)
-bool Game::setAllShipsForGoodStart(field& Field) {
+// поставить на поле все необходимые корабли // поставить на поле все необходимые корабли (случайное расположение кораблей)
+bool Game::setAllShips(field& Field, int settingType) {
+    // расставляем корабли в случайных местах, начиная с самых больших кораблей
+    for (int type = Field.shipTipesCount - 1; type >= 0; type--) {
+        // ставим на поле все корабли нужного типа 
+        for (int i = 0; i < Field.ships[type]; i++) {
+
+            // счётчик, сколько палуб было поставленно
+            int togle = 0;
+
+            // счётчик количества итераций для отлова ошибки 
+            int iteration = 0;
+
+            // пытаемся подставлять, пока не найдём позицию для корабля
+            while (togle < type + 1) {
+                // если прошло слишком много итераций, а мы так и не смогли поставить корабль, возвращаем false
+                iteration++;
+                if (iteration >= Iteration_Limit) {
+                    return false;
+                }
+
+
+                // берём случайную кординату
+                coordinates cord;
+                cord.x = rand() % X;
+                cord.y = rand() % Y;
+
+
+                //пытаемся поставить корабль на кординаты
+                togle = setShip(Field, cord, type + 1, 0, settingType);
+
+
+                // если не получилось поставить полный корабль
+                if (togle < type + 1) {
+                    removeShip(Field, cord);
+                }
+                else {
+                    confirmShip(Field, cord, settingType);
+                    cord.x = -1;
+                }
+
+            }
+        }
+    }
+    return true;
+}
+
+
+
+// поставить на поле все необходимые корабли (большие ставим по крайам)
+bool Game::setAllShips_BorderTactic(field& Field) {
     // расставляем корабли в случайных местах, начиная с самых больших кораблей
     for (int type = Field.shipTipesCount - 1; type >= 0; type--) {
         // ставим на поле все корабли нужного типа 
@@ -73,21 +122,9 @@ bool Game::setAllShipsForGoodStart(field& Field) {
                     }
                 }
                 else {
-                    // берём случайную кординату ближе к центру для маленьких кораблей
-                    if (cord.x == -1) {
-                        cord.x = rand() % (X - 2) + 1;
-                        cord.y = rand() % (Y - 2) + 1;
-                    }
-                    else {
-                        cord.x++;
-                        if (cord.x > X - 1) {
-                            cord.x = 0;
-                            cord.y++;
-                            if (cord.y > Y - 1) {
-                                cord.y = 0;
-                            }
-                        }
-                    }
+                    // берём случайную кординату для маленьких кораблей (большинство будет ближе к центру)
+                    cord.x = rand() % X;
+                    cord.y = rand() % Y;
                 }
 
                 //пытаемся поставить корабль на кординаты
@@ -110,8 +147,9 @@ bool Game::setAllShipsForGoodStart(field& Field) {
 }
 
 
-// поставить на поле все необходимые корабли
-bool Game::setAllShips(field& Field, int settingType) {
+
+// поставить на поле все необходимые корабли (большие ставим в одной из половин поля)
+bool Game::setAllShips_HalfTactic(field& Field,  int half) {
     // расставляем корабли в случайных местах, начиная с самых больших кораблей
     for (int type = Field.shipTipesCount - 1; type >= 0; type--) {
         // ставим на поле все корабли нужного типа 
@@ -119,9 +157,9 @@ bool Game::setAllShips(field& Field, int settingType) {
 
             // счётчик, сколько палуб было поставленно
             int togle = 0;
-
             // счётчик количества итераций для отлова ошибки 
             int iteration = 0;
+
 
             // пытаемся подставлять, пока не найдём позицию для корабля
             while (togle < type + 1) {
@@ -131,27 +169,37 @@ bool Game::setAllShips(field& Field, int settingType) {
                     return false;
                 }
 
-
-                // берём случайную кординату
                 coordinates cord;
-
-                if (cord.x == -1) {
+                // берём случайную кординату для больших кораблей в выбраной половине поля
+                if (type >= 1) {
+                    // int half -> 0 левая, 1 верхняя, 2 правая, 3 нижняя 
+                    switch (half) {
+                    case 0:
+                        cord.x = rand() % (X / 3 + 2);
+                        cord.y = rand() % Y;
+                        break;
+                    case 1:
+                        cord.x = rand() % X;
+                        cord.y = rand() % (Y / 3 + 2);
+                        break;
+                    case 2:
+                        cord.x = rand() % (X / 3 + 2) + 2 * (X / 3) + X % 3 - 2;
+                        cord.y = rand() % Y;
+                        break;
+                    case 3:
+                        cord.x = rand() % X;
+                        cord.y = rand() % (Y / 3 + 2) + 2 * (Y / 3) + Y % 3 - 2;
+                        break;
+                    }
+                }
+                else {
+                    // берём случайную кординату для маленьких кораблей (большинство будет в противоположной от больших кораблей половине поля)
                     cord.x = rand() % X;
                     cord.y = rand() % Y;
                 }
-                else {
-                    cord.x++;
-                    if (cord.x > X - 1) {
-                        cord.x = 0;
-                        cord.y++;
-                        if (cord.y > Y - 1) {
-                            cord.y = 0;
-                        }
-                    }
-                }
 
                 //пытаемся поставить корабль на кординаты
-                togle = setShip(Field, cord, type + 1, 0, settingType);
+                togle = setShip(Field, cord, type + 1, 0, 1);
 
 
                 // если не получилось поставить полный корабль
@@ -159,7 +207,7 @@ bool Game::setAllShips(field& Field, int settingType) {
                     removeShip(Field, cord);
                 }
                 else {
-                    confirmShip(Field, cord, settingType);
+                    confirmShip(Field, cord, 1);
                     cord.x = -1;
                 }
 
@@ -572,8 +620,3 @@ coordinates Game::ChooseBestShot_Entropy(field Field) {
     }
 }
 
-//// функция расчета лучшего выстрела через тактику расстановки кораблей по крайам
-//coordinates ChooseBestShot_BorderTactic(field Field) {
-//
-//
-//}

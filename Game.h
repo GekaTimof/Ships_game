@@ -79,11 +79,14 @@ class Game {
 	// функция для выстрела 
 	bool doShot(int playerNum, coordinates cord); // playerNum => 0 - выстрел по гостю, 1 - выстрел по боту 
 
-	// поставить на поле все необходимые корабли
+	// поставить на поле все необходимые корабли (случайное расположение кораблей)
 	bool setAllShips(field& Field, int settingType = 1);
 
-	// поставить на поле все необходимые корабли (расставляем корабли на поле бота)
-	bool setAllShipsForGoodStart(field& Field);
+	// поставить на поле все необходимые корабли (большие ставим по крайам)
+	bool setAllShips_BorderTactic(field& Field);	
+	
+	// поставить на поле все необходимые корабли (большие ставим в одной половине поля)
+	bool setAllShips_HalfTactic(field& Field, int half);
 
 	// попытаться поставить корабль нужного размера на нужные кординаты 
 	int setShip(field& Field, coordinates cord, const int size, int alreadySet = 0, int settingType = 1);
@@ -106,17 +109,11 @@ class Game {
 	// посчитать вероятности на поле
 	field calculateChances(field Field);
 
-	// проверка введенного поля из файла (есть ли файл и правильно ли он заполнен)
-	bool readGuestField(field& Field, const char* link);
-
 	// функция ищет размер корабля и удаляет его с поля
 	int shipSize(field& Field, coordinates startCord);
 
 	// функция расчета лучшего выстрела через случайность
 	coordinates ChooseBestShot_Random(field Field);
-
-	// функция расчета лучшего выстрела через тактику расстановки кораблей по краям
-	coordinates ChooseBestShot_BorderTactic(field Field);
 
 	// функция расчета лучшего выстрела через энтропию
 	coordinates ChooseBestShot_Entropy(field Field);
